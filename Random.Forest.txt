@@ -1,0 +1,147 @@
+all.data=read.csv("all.data.csv", header=T, row.names=1)
+normal.all.data=all.data[,c(8,9,10,11,12,13,26)]
+log.all.data=all.data[,c(14,15,16,17,18,19,26)]
+pc.all.data=all.data[,c(20:26)]
+
+Range.size
+range.normal.all.data=all.data[,c(8,9,10,11,12,13,27)]
+range.log.all.data=all.data[,c(14,15,16,17,18,19,27)]
+range.pc.all.data=all.data[,c(20,21,22,23,24,25,27)]
+
+library(randomForest)
+library(caret)
+
+set.seed(3)
+id=sample(2, nrow(log.all.data), prob=c(0.7,0.3), replace=TRUE)
+train=log.all.data[id==1,]
+test=log.all.data[id==2,]
+
+forest=randomForest(Quantile~., data=train, importance=TRUE, ntree=1000)
+
+pred.train=predict(forest, train, type="class")
+table(pred.train, train$Quantile)
+
+pred.valid=predict(forest, test, type="class")
+mean(pred.valid==test$Quantile) # error rate on the test data
+table(pred.valid, test$Quantile)
+
+importance(forest)
+varImpPlot(forest)
+
+confusionMatrix(data=pred.valid, reference=test$Quantile)
+
+library(randomForest)
+
+set.seed(3)
+id=sample(2, nrow(log.all.data), prob=c(0.7,0.3), replace=TRUE)
+train=log.all.data[id==1,]
+test=log.all.data[id==2,]
+
+bestmtry=tuneRF(train, train$Quantile, stepFactor=1.2, improve=0.01, trace=T, plot=T)
+
+forest=randomForest(Quantile~., data=train, importance=TRUE)
+
+pred.train=predict(forest, train, type="class")
+table(pred.train, train$Quantile)
+
+pred.valid=predict(forest, test, type="class")
+mean(pred.valid==test$Quantile)
+table(pred.valid, test$Quantile)
+
+importance(forest)
+varImpPlot(forest)
+
+confusionMatrix(data=pred.valid, reference=test$Quantile)
+
+library(randomForest)
+
+set.seed(3)
+id=sample(2, nrow(pc.all.data), prob=c(0.7,0.3), replace=TRUE)
+train=pc.all.data[id==1,]
+test=pc.all.data[id==2,]
+
+bestmtry=tuneRF(train, train$Quantile, stepFactor=1.2, improve=0.01, trace=T, plot=T)
+
+forest=randomForest(Quantile~., data=train, importance=TRUE)
+
+pred.train=predict(forest, train, type="class")
+table(pred.train, train$Quantile)
+
+pred.valid=predict(forest, test, type="class")
+mean(pred.valid==test$Quantile)
+table(pred.valid, test$Quantile)
+
+importance(forest)
+varImpPlot(forest)
+
+confusionMatrix(data=pred.valid, reference=test$Quantile)
+
+library(randomForest)
+
+set.seed(3)
+id=sample(2, nrow(range.normal.all.data), prob=c(0.7,0.3), replace=TRUE)
+train=range.normal.all.data[id==1,]
+test=range.normal.all.data[id==2,]
+
+bestmtry=tuneRF(train, train$Range.Size, stepFactor=1.2, improve=0.01, trace=T, plot=T)
+
+forest=randomForest(Range.Size~., data=train, importance=TRUE)
+
+pred.train=predict(forest, train, type="class")
+table(pred.train, train$Range.Size)
+
+pred.valid=predict(forest, test, type="class")
+mean(pred.valid==test$Range.Size)
+table(pred.valid, test$Range.Size)
+
+importance(forest)
+varImpPlot(forest)
+
+confusionMatrix(data=pred.valid, reference=test$Range.Size)
+
+
+library(randomForest)
+
+set.seed(3)
+id=sample(2, nrow(range.log.all.data), prob=c(0.7,0.3), replace=TRUE)
+train=range.log.all.data[id==1,]
+test=range.log.all.data[id==2,]
+
+bestmtry=tuneRF(train, train$Range.Size, stepFactor=1.2, improve=0.01, trace=T, plot=T)
+
+forest=randomForest(Range.Size~., data=train, importance=TRUE)
+
+pred.train=predict(forest, train, type="class")
+table(pred.train, train$Range.Size)
+
+pred.valid=predict(forest, test, type="class")
+mean(pred.valid==test$Range.Size)
+table(pred.valid, test$Range.Size)
+
+importance(forest)
+varImpPlot(forest)
+
+confusionMatrix(data=pred.valid, reference=test$Range.Size)
+
+library(randomForest)
+
+set.seed(3)
+id=sample(2, nrow(range.pc.all.data), prob=c(0.7,0.3), replace=TRUE)
+train=range.pc.all.data[id==1,]
+test=range.pc.all.data[id==2,]
+
+bestmtry=tuneRF(train, train$Range.Size, stepFactor=1.2, improve=0.01, trace=T, plot=T)
+
+forest=randomForest(Range.Size~., data=train, importance=TRUE)
+
+pred.train=predict(forest, train, type="class")
+table(pred.train, train$Range.Size)
+
+pred.valid=predict(forest, test, type="class")
+mean(pred.valid==test$Range.Size)
+table(pred.valid, test$Range.Size)
+
+importance(forest)
+varImpPlot(forest)
+
+confusionMatrix(data=pred.valid, reference=test$Range.Size)

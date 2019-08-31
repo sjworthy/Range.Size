@@ -1,0 +1,871 @@
+# Influence of Functional Diversity on Range Patterns in Species Richness
+## Samantha J. Worthy and Nathan G. Swenson
+
+#########################################################################################
+#########################################################################################
+# Putting Species into Range Size Quantiles
+
+### Divide the range sizes from 0 to 1 by .2 or 20%
+
+quantile(all.data$range, seq(0, 1, by=.2))
+
+
+### all.data is file final.data.csv
+### Determine the number of species in each quantile
+### The range given is slightly adjusted from that given by the quantile split of the data so that the data is more evenly distributed into quantiles.
+
+sum(all.data$range<=500)
+[1] 23
+sum(all.data$range>500 & all.data$range<=749)
+[1] 21
+sum(all.data$range>749 & all.data$range<=849)
+[1] 22
+sum(all.data$range>849 & all.data$range<=950)
+[1] 24
+sum(all.data$range>950)
+[1] 21
+
+### If the value in column range of all.data meets the criteria stated, place the quantile name in column Quantile
+
+all.data$Quantile[all.data$range<=500]="Q1"
+all.data$Quantile[all.data$range>500 & all.data$range<=749]="Q2"
+all.data$Quantile[all.data$range>749 & all.data$range<=849]="Q3"
+all.data$Quantile[all.data$range>849 & all.data$range<=950]="Q4"
+all.data$Quantile[all.data$range>950]="Q5"
+
+### If the value in column range of sonadora.csv meets the criteria stated, place the quantile name in column Quantile
+### Get a list of the species that are in each quantile
+### Add Q1-Q5 for each of these species to the Quantile column
+
+Q1=as.character(all.data$SpeciesCode[all.data$range<=500])
+Q2=as.character(all.data$SpeciesCode[all.data$range>500 &
+all.data$range<=749])
+Q3=as.character(all.data$SpeciesCode[all.data$range>749 &
+all.data$range<=849])
+Q4=as.character(all.data$SpeciesCode[all.data$range>849 &
+all.data$range<=950])
+Q5=as.character(all.data$SpeciesCode[all.data$range>950])
+
+
+sonadora$Quantile[sonadora$stemSpeciesCode %in% Q1]="Q1"
+sonadora$Quantile[sonadora$stemSpeciesCode %in% Q2]="Q2"
+sonadora$Quantile[sonadora$stemSpeciesCode %in% Q3]="Q3"
+sonadora$Quantile[sonadora$stemSpeciesCode %in% Q4]="Q4"
+sonadora$Quantile[sonadora$stemSpeciesCode %in% Q5]="Q5"
+
+#########################################################################################
+#########################################################################################
+# Making a Community Data Matrix
+
+### Make a community data matrix with number of species in each elevation plot
+### Make a blank community data matrix with 111 columns, one for each species, and 16 rows, one for each plot in the transect (250m-1000m)
+
+cdm=matrix(data=NA, ncol=111, nrow=16)
+colnames(cdm)=final.data$SpeciesCode
+rownames(cdm)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+### Fill in the community data matrix
+### Make a list object containing the elevation of each plot
+
+listy=c(250, 300, 350, 400, 450, 500, 550, 600, 650, 700,750,
+800, 850, 900, 950, 1000)
+
+### For loop that loops through each element in listy, each elevation. Then, subset the abundance data set by the plot elevation and take that subsetted object and table the SpeciesCode column and take that object and place those values into row i of cdm object.
+
+for(i in 1:length(listy)){
+elevation=subset(sonadora, sonadora$plotElevation==listy[i])
+output=table(elevation$stemSpeciesCode)
+cdm[i,]=output
+}
+
+#########################################################################################
+### Make a community data matrix where quantiles are the rows/communities
+### Make a blank community data matrix with 111 columns, one for each species, and 5 rows, one for each quantile.
+
+q.cdm=matrix(data=NA, nrow=5, ncol=111)
+colnames(q.cdm)=all.data$SpeciesCode
+rownames(q.cdm)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+
+### Fill in the community data matrix
+### Make a list containing the quantile names
+
+listy=c("Q1", "Q2", "Q3", "Q4", "Q5")
+
+### For loop that loops through each element in listy, each quantile. Then, subset the abundance data set by the quantile and take that subsetted object and table the SpeciesCode column and take that object and place those values into row i of all.q.cdm.
+
+for(i in 1:length(listy)){
+quantile=subset(sonadora, sonadora$Quantile==listy[i])
+output=table(quantile$stemSpeciesCode)
+q.cdm[i,]=output
+}
+
+#########################################################################################
+### Make community data matrices for each quantile separately.
+### Get a list of the species in each quantile
+
+
+Q1=as.character(all.data$SpeciesCode[final.data$Quantile=="Q1"])
+Q2=as.character(all.data$SpeciesCode[final.data$Quantile=="Q2"])
+Q3=as.character(final.data$SpeciesCode[final.data$Quantile=="Q3"])
+Q4=as.character(all.data$SpeciesCode[final.data$Quantile=="Q4"])
+Q5=as.character(all.data$SpeciesCode[final.data$Quantile=="Q5"])
+### Make empty cdms
+q1.cdm=matrix(data=NA, nrow=16, ncol=23)
+q2.cdm=matrix(data=NA, nrow=16, ncol=21)
+q3.cdm=matrix(data=NA, nrow=16, ncol=22)
+q4.cdm=matrix(data=NA, nrow=16, ncol=24)
+q5.cdm=matrix(data=NA, nrow=16, ncol=21)
+
+
+colnames(q1.cdm)=Q1
+colnames(q2.cdm)=Q2
+colnames(q3.cdm)=Q3
+colnames(q4.cdm)=Q4
+colnames(q5.cdm)=Q5
+rownames(q1.cdm)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+rownames(q2.cdm)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+rownames(q3.cdm)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+rownames(q4.cdm)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+rownames(q5.cdm)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+Q1.subset=sonadora[sonadora$Quantile=="Q1",]
+Q2.subset=sonadora[sonadora$Quantile=="Q2",]
+Q3.subset=sonadora[sonadora$Quantile=="Q3",]
+Q4.subset=sonadora[sonadora$Quantile=="Q4",]
+Q5.subset=sonadora[sonadora$Quantile=="Q5",]
+
+write.csv(Q1.subset,file="Q1.subset.csv")
+write.csv(Q2.subset,file="Q2.subset.csv")
+write.csv(Q3.subset,file="Q3.subset.csv")
+write.csv(Q4.subset,file="Q4.subset.csv")
+write.csv(Q5.subset,file="Q5.subset.csv")
+
+Q1.df=read.csv("Q1.subset.csv",header=T,row.names=1)
+Q2.df=read.csv("Q2.subset.csv",header=T,row.names=1)
+Q3.df=read.csv("Q3.subset.csv",header=T,row.names=1)
+Q4.df=read.csv("Q4.subset.csv",header=T,row.names=1)
+Q5.df=read.csv("Q5.subset.csv",header=T,row.names=1)
+
+
+listy=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700,750, 800, 850, 900, 950, 1000)
+
+for(i in 1:length(listy)){
+elevation=subset(Q1.df, Q1.df$plotElevation==listy[i])
+output=table(elevation$stemSpeciesCode)
+q1.cdm[i,]=output
+}
+
+for(i in 1:length(listy)){
+elevation=subset(Q2.df, Q2.df$plotElevation==listy[i])
+output=table(elevation$stemSpeciesCode)
+q2.cdm[i,]=output
+}
+
+for(i in 1:length(listy)){
+elevation=subset(Q3.df, Q3.df$plotElevation==listy[i])
+output=table(elevation$stemSpeciesCode)
+q3.cdm[i,]=output
+}
+
+for(i in 1:length(listy)){
+elevation=subset(Q4.df, Q4.df$plotElevation==listy[i])
+output=table(elevation$stemSpeciesCode)
+q4.cdm[i,]=output
+}
+
+for(i in 1:length(listy)){
+elevation=subset(Q5.df, Q5.df$plotElevation==listy[i])
+output=table(elevation$stemSpeciesCode)
+q5.cdm[i,]=output
+}
+
+#########################################################################################
+### Make community data matrix where communities are quantiles of each plot and columns are species in each plot
+#Make empty cdms
+q250=matrix(data=NA, nrow=5, ncol=30)
+q300=matrix(data=NA, nrow=5, ncol=49)
+q350=matrix(data=NA, nrow=5, ncol=41)
+q400=matrix(data=NA, nrow=5, ncol=45)
+q450=matrix(data=NA, nrow=5, ncol=38)
+q500=matrix(data=NA, nrow=5, ncol=43)
+q550=matrix(data=NA, nrow=5, ncol=26)
+q600=matrix(data=NA, nrow=5, ncol=29)
+q650=matrix(data=NA, nrow=5, ncol=37)
+q700=matrix(data=NA, nrow=5, ncol=36)
+q750=matrix(data=NA, nrow=5, ncol=29)
+q800=matrix(data=NA, nrow=5, ncol=29)
+q850=matrix(data=NA, nrow=5, ncol=25)
+q900=matrix(data=NA, nrow=5, ncol=25)
+q950=matrix(data=NA, nrow=5, ncol=16)
+q1000=matrix(data=NA, nrow=5, ncol=19)
+
+rownames(q250)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q300)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q350)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q400)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q450)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q500)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q550)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q600)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q650)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q700)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q750)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q800)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q850)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q900)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q950)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+rownames(q1000)=c("Q1", "Q2", "Q3", "Q4", "Q5")
+
+elevation250=subset(sonadora, sonadora$plotElevation=="250")
+elevation300=subset(sonadora, sonadora$plotElevation=="300")
+elevation350=subset(sonadora, sonadora$plotElevation=="350")
+elevation400=subset(sonadora, sonadora$plotElevation=="400")
+elevation450=subset(sonadora, sonadora$plotElevation=="450")
+elevation500=subset(sonadora, sonadora$plotElevation=="500")
+elevation550=subset(sonadora, sonadora$plotElevation=="550")
+elevation600=subset(sonadora, sonadora$plotElevation=="600")
+elevation650=subset(sonadora, sonadora$plotElevation=="650")
+elevation700=subset(sonadora, sonadora$plotElevation=="700")
+elevation750=subset(sonadora, sonadora$plotElevation=="750")
+elevation800=subset(sonadora, sonadora$plotElevation=="800")
+elevation850=subset(sonadora, sonadora$plotElevation=="850")
+elevation900=subset(sonadora, sonadora$plotElevation=="900")
+elevation950=subset(sonadora, sonadora$plotElevation=="950")
+elevation1000=subset(sonadora, sonadora$plotElevation=="1000")
+
+output1=unique(elevation250$stemSpeciesCode)
+output2=unique(elevation300$stemSpeciesCode)
+output3=unique(elevation350$stemSpeciesCode)
+output4=unique(elevation400$stemSpeciesCode)
+output5=unique(elevation450$stemSpeciesCode)
+output6=unique(elevation500$stemSpeciesCode)
+output7=unique(elevation550$stemSpeciesCode)
+output8=unique(elevation600$stemSpeciesCode)
+output9=unique(elevation650$stemSpeciesCode)
+output10=unique(elevation700$stemSpeciesCode)
+output11=unique(elevation750$stemSpeciesCode)
+output12=unique(elevation800$stemSpeciesCode)
+output13=unique(elevation850$stemSpeciesCode)
+output14=unique(elevation900$stemSpeciesCode)
+output15=unique(elevation950$stemSpeciesCode)
+output16=unique(elevation1000$stemSpeciesCode)
+
+colnames(q250)=output1
+colnames(q300)=output2
+colnames(q350)=output3
+colnames(q400)=output4
+colnames(q450)=output5
+colnames(q500)=output6
+colnames(q550)=output7
+colnames(q600)=output8
+colnames(q650)=output9
+colnames(q700)=output10
+colnames(q750)=output11
+colnames(q800)=output12
+colnames(q850)=output13
+colnames(q900)=output14
+colnames(q950)=output15
+colnames(q250)=output16
+
+write.csv(elevation250, file="elevation250.subset.csv")
+write.csv(elevation300, file="elevation300.subset.csv")
+write.csv(elevation350, file="elevation350.subset.csv")
+write.csv(elevation400, file="elevation400.subset.csv")
+write.csv(elevation450, file="elevation450.subset.csv")
+write.csv(elevation500, file="elevation500.subset.csv")
+write.csv(elevation550, file="elevation550.subset.csv")
+write.csv(elevation600, file="elevation600.subset.csv")
+write.csv(elevation650, file="elevation650.subset.csv")
+write.csv(elevation700, file="elevation700.subset.csv")
+write.csv(elevation750, file="elevation750.subset.csv")
+write.csv(elevation800, file="elevation800.subset.csv")
+write.csv(elevation850, file="elevation850.subset.csv")
+write.csv(elevation900, file="elevation900.subset.csv")
+write.csv(elevation950, file="elevation950.subset.csv")
+write.csv(elevation1000, file="elevation1000.subset.csv")
+
+
+listy=c("Q1", "Q2", "Q3", "Q4", "Q5")
+
+for(i in 1:length(listy)){
+quantile=subset(elevation950, elevation950$Quantile==listy[i])
+output=table(quantile$stemSpeciesCode)
+q950[i,]=output
+}
+
+write.csv(q950, file="q950.cdm.csv")
+
+#########################################################################################
+### Presence/Absence Community data matrices for each quantile
+
+q5.cdm.pa=decostand(q5.cdm, "pa")
+q4.cdm.pa=decostand(q4.cdm, "pa")
+q3.cdm.pa=decostand(q3.cdm, "pa")
+q2.cdm.pa=decostand(q2.cdm, "pa")
+q1.cdm.pa=decostand(q1.cdm, "pa")
+
+#########################################################################################
+#########################################################################################
+# Making a trait data matrix
+### Make a trait data matrix where the number of rows (111) is equal to the number of species and the number of columns (6) is equal to the number of traits.
+
+tdm=matrix(data=NA, nrow=111, ncol=6)
+colnames(tdm)=c("height.ft", "la", "sla", "wood", "n", "p" )
+rownames(tdm)=final.data$SpeciesCode
+
+### Cells of trait data matrix contain trait values for species
+
+tdm[,1]=final.data$height_ft
+tdm[,2]=final.data$la
+tdm[,3]=final.data$sla
+tdm[,4]=final.data$wood
+tdm[,5]=final.data$n
+tdm[,6]=final.data$p
+
+# Transform trait data to approximate a normal distribution
+
+
+tdm.scaled=apply(log(tdm), MARGIN=2, scale)
+row.names(tdm.scaled)=row.names(tdm)
+colnames(tdm.scaled)=c("log.height.ft", "log.la", "log.sla",
+"log.wood", "log.n", "log.p")
+
+### Make trait data matrix for each quantile
+### Make character string for species within each quantile
+
+Q1=as.character(all.data$SpeciesCode[all.data$range<=500])
+Q2=as.character(all.data$SpeciesCode[all.data$range>500 & 
+all.data$range<=749])
+Q3=as.character(all.data$SpeciesCode[all.data$range>749 & 
+all.data$range<=849])
+Q4=as.character(all.data$SpeciesCode[all.data$range>849 & 
+all.data$range<=950])
+Q5=as.character(all.data$SpeciesCode[all.data$range>950])
+
+### Subset original trait data matrix by the species in each quantile character string
+to make a trait data matrix for each quantile. tdm is tdm.scaled.csv
+
+Q1.traits=tdm[Q1,]
+Q2.traits=tdm[Q2,]
+Q3.traits=tdm[Q3,]
+Q4.traits=tdm[Q4,]
+Q5.traits=tdm[Q5,]
+
+# Perform a principal components analysis (PCA) on traits
+### Performing a PCA will reduce trait redundancy and produce orthogonal axes of function.
+
+pca=princomp(tdm.scaled)
+
+
+### Determine the proportion of the total variance explained by each axis of PCA
+
+summary(pca)
+
+### Determine which traits are most heavily weighted on these axes
+### Axis 1: Leaf Nitrogen and Leaf Phosphorus
+### Axis 2: Maximum Height and Leaf Area
+### Axis 3: Wood Specific Gravity and Specific Leaf Area
+
+print(pca$loadings)
+
+### Get pca scores for first 3 axes and put them into new matrix
+### The first 3 axes explain 78% of the variation in the data.
+### Give row names from the original trait matrix
+
+pca.scores=pc$scores[,1:3]
+rownames(pca.scores)=rownames(traits)
+
+
+# Calculating Functional Richness
+### Because dbFD function reduces the data set's dimensionality automatically, it uses a different number of dimensions for each community. To keep number of dimensions constant, must determine convex hull volume manually for each community.
+library(geometry)
+
+### FRic for each elevation plot for entire data set.
+### pca only includes 1st three axes.
+hull.matrix.all=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(abund.cdm[i,abund.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+
+### FRic for each elevation plot excluding wide ranging species
+### pca only includes 1st three axes of narrow ranging species
+
+names=as.factor(colnames(narrow.cdm))
+narrow.pca=subset(pca, rownames(pca)%in%names)
+narrow.pca=narrow.pca[,1:3]
+
+hull.matrix.narrow=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(narrow.pca[names(narrow.cdm[i,narrow.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.narrow[i,1]=q.hull.vol
+}
+
+### FRic for each elevation plot excluding narrow ranging species
+### pca only includes 1st three axes of wide ranging species
+
+names.2=as.factor(colnames(wide.cdm))
+wide.pca=subset(pca, rownames(pca)%in%names.2)
+wide.pca=wide.pca[,1:3]
+
+hull.matrix.wide=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(wide.pca[names(wide.cdm[i,wide.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.wide[i,1]=q.hull.vol
+}
+
+
+
+### Determine the average range size for each plot
+
+plot250=subset(sonadora, sonadora$plotElevation==250)
+plot300=subset(sonadora, sonadora$plotElevation==300)
+plot350=subset(sonadora, sonadora$plotElevation==350)
+plot400=subset(sonadora, sonadora$plotElevation==400)
+plot450=subset(sonadora, sonadora$plotElevation==450)
+plot500=subset(sonadora, sonadora$plotElevation==500)
+plot550=subset(sonadora, sonadora$plotElevation==550)
+plot600=subset(sonadora, sonadora$plotElevation==600)
+plot650=subset(sonadora, sonadora$plotElevation==650)
+plot700=subset(sonadora, sonadora$plotElevation==700)
+plot750=subset(sonadora, sonadora$plotElevation==750)
+plot800=subset(sonadora, sonadora$plotElevation==800)
+plot850=subset(sonadora, sonadora$plotElevation==850)
+plot900=subset(sonadora, sonadora$plotElevation==900)
+plot950=subset(sonadora, sonadora$plotElevation==950)
+plot1000=subset(sonadora, sonadora$plotElevation==1000)
+
+mean(plot250$Range) = 680.37
+mean(plot300$Range) = 785.59
+mean(plot350$Range) = 872.70
+mean(plot400$Range) = 793.08
+mean(plot450$Range) = 826.36
+mean(plot500$Range) = 851.10
+mean(plot550$Range) = 734.63
+mean(plot600$Range) = 801.74
+mean(plot650$Range) = 724.50
+mean(plot700$Range) = 820.37
+mean(plot750$Range) = 861.23
+mean(plot800$Range) = 853.65
+mean(plot850$Range) = 725.14
+mean(plot900$Range) = 845.02
+mean(plot950$Range) = 1082.58
+mean(plot1000$Range) = 824.69
+
+#########################################################################################
+#########################################################################################
+### Shifting Ranges
+og.shift.range=all.data[,c(1, 5,6)]
+shift.range.50=og.shift.range
+shift.range.50[,2:3]=shift.range.50[,2:3]+50
+shift.range.100=shift.range.50
+shift.range.100[,2:3]=shift.range.100[,2:3]+50
+shift.range.150=shift.range.100
+shift.range.150[,2:3]=shift.range.150[,2:3]+50
+shift.range.200=shift.range.150
+shift.range.200[,2:3]=shift.range.200[,2:3]+50
+shift.range.250=shift.range.200
+shift.range.250[,2:3]=shift.range.250[,2:3]+50
+shift.range.300=shift.range.250
+shift.range.300[,2:3]=shift.range.300[,2:3]+50
+shift.range.350=shift.range.300
+shift.range.350[,2:3]=shift.range.350[,2:3]+50
+shift.range.400=shift.range.350
+shift.range.400[,2:3]=shift.range.400[,2:3]+50
+shift.range.450=shift.range.400
+shift.range.450[,2:3]=shift.range.450[,2:3]+50
+shift.range.500=shift.range.450
+shift.range.500[,2:3]=shift.range.500[,2:3]+50
+shift.range.550=shift.range.500
+shift.range.550[,2:3]=shift.range.550[,2:3]+50
+
+write.csv(shift.range.1, file="shift.range.50.csv")
+
+### Need cdm which changes every increase 50 m
+
+cdm.shift.range.=matrix(data=NA, ncol=111, nrow=16)
+colnames(cdm.shift.range.)=all.data$SpeciesCode
+rownames(cdm.shift.range)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+### Fill in the community data matrix
+### Make a list object containing the elevation of each plot
+
+listy=c(250, 300, 350, 400, 450, 500, 550, 600, 650, 700,750,
+800, 850, 900, 950, 1000)
+
+### For loop that loops through each element in listy, each elevation. Then, subset the abundance data set by the plot elevation and take that subsetted object and table the SpeciesCode column and take that object and place those values into row i of cdm object.
+
+
+for(j in 1:111){
+for(i in 1:length(listy)){
+cdm.shift.range[i,j]=ifelse(shift.range[j,2] <= listy[i] & shift.range[j,3] >= listy[i], 1, 0) 
+}
+}
+
+write.csv(cdm.shift.range, file="cdm.shift.range.csv")
+
+### Calculate FRic
+
+hull.matrix=matrix(data=NA, nrow=16,ncol=1)
+
+for(i in 1:16){
+q.hull=convhulln(pca[names(cdm.shift.range[i,cdm.shift.range[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix[i,1]=q.hull.vol
+}
+
+hull.matrix[,2]=rowSums(cdm.shift.range)
+write.csv(hull.matrix., file="hull.matrix.shift.range.csv")
+
+hull.matrix.all=matrix(data=NA, nrow=16,ncol=1)
+for(i in 2:16){
+q.hull=convhulln(pca[names(shift.range.cdm.6[i,shift.range.cdm.6[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+write.csv(hull.matrix.all, file="hull.matrix.shift.range.6.csv")
+
+for(i in 3:16){
+q.hull=convhulln(pca[names(shift.range.cdm.7[i,shift.range.cdm.7[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+write.csv(hull.matrix.all, file="hull.matrix.shift.range.7.csv")
+for(i in 4:16){
+q.hull=convhulln(pca[names(shift.range.cdm.8[i,shift.range.cdm.8[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+write.csv(hull.matrix.all, file="hull.matrix.shift.range.8.csv")
+for(i in 5:16){
+q.hull=convhulln(pca[names(shift.range.cdm.9[i,shift.range.cdm.9[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+write.csv(hull.matrix.all, file="hull.matrix.shift.range.9.csv")
+for(i in 6:16){
+q.hull=convhulln(pca[names(shift.range.cdm.10[i,shift.range.cdm.10[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+write.csv(hull.matrix.all, file="hull.matrix.shift.range.10.csv")
+for(i in 7:16){
+q.hull=convhulln(pca[names(shift.range.cdm.11[i,shift.range.cdm.11[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.all[i,1]=q.hull.vol
+}
+write.csv(hull.matrix.all, file="hull.matrix.shift.range.11.csv")
+
+plot(1, type="b", xlab="Species Richness", ylab="FRic", xlim=rev(range(c(0,105))), ylim=c(0,85))
+
+x=seq(0,110,by=10)
+y=seq(0,110, by=10)
+plot(x,y, xlim=(rev(range(x))))
+plot(all.hull$R.250, all.hull$E.250, xlim=(rev(range(all.hull$R.250))), type="b")
+
+### Fill in the community data matrix
+### Make a list object containing the elevation of each plot
+
+listy=c(250, 300, 350, 400, 450, 500, 550, 600, 650, 700,750,
+800, 850, 900, 950, 1000)
+
+### For loop that loops through each element in listy, each elevation. Then, subset the abundance data set by the plot elevation and take that subsetted object and table the SpeciesCode column and take that object and place those values into row i of cdm object.
+
+
+for(j in 1:111){
+for(i in 1:length(listy)){
+cdm.shift.range.2030[i,j]=ifelse(time.2030[j,2] <= listy[i] & time.2030[j,3] >= listy[i], 1, 0) 
+}
+}
+
+cdm.shift.range.2050=matrix(data=NA, ncol=111, nrow=16)
+colnames(cdm.shift.range.2050)=all.data$SpeciesCode
+rownames(cdm.shift.range.2050)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+
+for(j in 1:111){
+for(i in 1:length(listy)){
+cdm.shift.range.2050[i,j]=ifelse(time.2050[j,2] <= listy[i] & time.2050[j,3] >= listy[i], 1, 0) 
+}
+}
+
+cdm.shift.range.2070=matrix(data=NA, ncol=111, nrow=16)
+colnames(cdm.shift.range.2070)=all.data$SpeciesCode
+rownames(cdm.shift.range.2070)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+
+for(j in 1:111){
+for(i in 1:length(listy)){
+cdm.shift.range.2070[i,j]=ifelse(time.2070[j,2] <= listy[i] & time.2070[j,3] >= listy[i], 1, 0) 
+}
+}
+
+cdm.shift.range.2090=matrix(data=NA, ncol=111, nrow=16)
+colnames(cdm.shift.range.2090)=all.data$SpeciesCode
+rownames(cdm.shift.range.2090)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+
+for(j in 1:111){
+for(i in 1:length(listy)){
+cdm.shift.range.2090[i,j]=ifelse(time.2090[j,2] <= listy[i] & time.2090[j,3] >= listy[i], 1, 0) 
+}
+}
+
+cdm.shift.range.2100=matrix(data=NA, ncol=111, nrow=16)
+colnames(cdm.shift.range.2100)=all.data$SpeciesCode
+rownames(cdm.shift.range.2100)=c(250, 300, 350, 400, 450, 500, 550, 600, 650,
+700, 750, 800, 850, 900, 950, 1000)
+
+
+for(j in 1:111){
+for(i in 1:length(listy)){
+cdm.shift.range.2100[i,j]=ifelse(time.2100[j,2] <= listy[i] & time.2100[j,3] >= listy[i], 1, 0) 
+}
+}
+
+hull.matrix.2030=matrix(data=NA, nrow=16,ncol=1)
+
+for(i in 1:16){
+q.hull.2030=convhulln(pca[names(cdm.shift.range.2030[i,cdm.shift.range.2030[i,]>0]),], options="FA")
+q.hull.vol=q.hull.2030$vol
+hull.matrix.2030[i,1]=q.hull.vol
+}
+
+hull.matrix.2050=matrix(data=NA, nrow=16,ncol=1)
+
+for(i in 3:16){
+q.hull.2050=convhulln(pca[names(cdm.shift.range.2050[i,cdm.shift.range.2050[i,]>0]),], options="FA")
+q.hull.vol=q.hull.2050$vol
+hull.matrix.2050[i,1]=q.hull.vol
+}
+
+hull.matrix.2070=matrix(data=NA, nrow=16,ncol=1)
+
+for(i in 5:16){
+q.hull.2070=convhulln(pca[names(cdm.shift.range.2070[i,cdm.shift.range.2070[i,]>0]),], options="FA")
+q.hull.vol=q.hull.2070$vol
+hull.matrix.2070[i,1]=q.hull.vol
+}
+
+hull.matrix.2090=matrix(data=NA, nrow=16,ncol=1)
+
+for(i in 6:16){
+q.hull.2090=convhulln(pca[names(cdm.shift.range.2090[i,cdm.shift.range.2090[i,]>0]),], options="FA")
+q.hull.vol=q.hull.2090$vol
+hull.matrix.2090[i,1]=q.hull.vol
+}
+
+hull.matrix.2100=matrix(data=NA, nrow=16,ncol=1)
+
+for(i in 10:16){
+q.hull.2100=convhulln(pca[names(cdm.shift.range.2100[i,cdm.shift.range.2100[i,]>0]),], options="FA")
+q.hull.vol=q.hull.2100$vol
+hull.matrix.2100[i,1]=q.hull.vol
+}
+
+Make cdm excluding species in each quantile one at a time
+q1.sp=subset(all.data, all.data$Quantile == "Q1")
+listy=q1.sp$SpeciesCode
+q1.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+hull.matrix.minus.q1=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(q1.pa.cdm[i,q1.pa.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.minus.q1[i,1]=q.hull.vol
+}
+
+ listy=q1.sp$SpeciesCode
+> q2.sp=subset(all.data, all.data$Quantile == "Q2")
+> listy=q2.sp$SpeciesCode
+> q2.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+> hull.matrix.minus.q2=matrix(data=NA, nrow=16,ncol=1)
+> for(i in 1:16){
++ q.hull=convhulln(pca[names(q2.pa.cdm[i,q2.pa.cdm[i,]>0]),], options="FA")
++ q.hull.vol=q.hull$vol
++ hull.matrix.minus.q2[i,1]=q.hull.vol
++ }
+
+q3.sp=subset(all.data, all.data$Quantile == "Q3")
+listy=q3.sp$SpeciesCode
+q3.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+hull.matrix.minus.q3=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(q3.pa.cdm[i,q3.pa.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.minus.q3[i,1]=q.hull.vol
+}
+
+q4.sp=subset(all.data, all.data$Quantile == "Q4")
+listy=q4.sp$SpeciesCode
+q4.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+hull.matrix.minus.q4=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(q4.pa.cdm[i,q4.pa.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.minus.q4[i,1]=q.hull.vol
+}
+
+q5.sp=subset(all.data, all.data$Quantile == "Q5")
+listy=q5.sp$SpeciesCode
+q5.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+hull.matrix.minus.q5=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(q5.pa.cdm[i,q5.pa.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.minus.q5[i,1]=q.hull.vol
+}
+
+q1.2.sp=subset(all.data, subset=Quantile %in% c("Q1", "Q2"))
+listy=q1.2.sp$SpeciesCode
+q1.2.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+hull.matrix.minus.q1.2=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(q1.2.pa.cdm[i,q1.2.pa.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.minus.q1.2[i,1]=q.hull.vol
+}
+
+q4.5.sp=subset(all.data, subset=Quantile %in% c("Q4", "Q5"))
+listy=q4.5.sp$SpeciesCode
+q4.5.pa.cdm=pa.cdm[,-which(names(pa.cdm)%in% listy)]
+hull.matrix.minus.q4.5=matrix(data=NA, nrow=16,ncol=1)
+for(i in 1:16){
+q.hull=convhulln(pca[names(q4.5.pa.cdm[i,q4.5.pa.cdm[i,]>0]),], options="FA")
+q.hull.vol=q.hull$vol
+hull.matrix.minus.q4.5[i,1]=q.hull.vol
+}
+
+# correlation test between species richness of each quantile and overall species richness
+## Table.2
+cor.test(rowSums(pa.cdm), rowSums(q1.pa.cdm))
+cor.test(rowSums(pa.cdm), rowSums(q2.pa.cdm))
+cor.test(rowSums(pa.cdm), rowSums(q3.pa.cdm))
+cor.test(rowSums(pa.cdm), rowSums(q4.pa.cdm))
+cor.test(rowSums(pa.cdm), rowSums(q5.pa.cdm))
+
+
+## Figure.1
+
+# Correlation between species richness and elevation
+pa.cdm=read.csv("pa.cdm.csv", header=T, row.names=1)
+total.rich=as.numeric(rowSums(pa.cdm))
+cor.test(elevation, total.rich)
+
+plot(total.abund~elevation, xlab="Elevation (m)", ylab="Species Abundance", pch=19)
+abline(lm(total.abund~elevation))
+
+# Correlation between species abundance and elevation
+abund.cdm=read.csv("abund.cdm.csv", header=T, row.names=1)
+total.abund=as.numeric(rowSums(abund.cdm))
+cor.test(elevation, total.abund)
+
+plot(total.abund~elevation, xlab="Elevation (m)", ylab="Species Abundance", pch=19)
+abline(lm(total.abund~elevation))
+
+# correlation between abundance made of wide ranging species and elevation
+wide.abundance=as.numeric(rowSums(wide.cdm))
+cor.test(elevation, wide.abundance)
+
+plot(wide.abundance~elevation, xlab="Elevation (m)", ylab="Wide-Ranging Species Abundance", pch=19)
+abline(lm(wide.abundance~elevation))
+
+# correlation between abundance of narrow ranging species and elevation
+narrow.abundance=as.numeric(rowSums(narrow.cdm))
+cor.test(elevation, narrow.abundance)
+
+plot(narrow.abundance~elevation, xlab="Elevation (m)", ylab="Narrow-Ranging Species Abundance", pch=19)
+abline(lm(narrow.abundance~elevation))
+
+# Plots of correations
+par(mfrow=c(2,2))
+plot(total.rich~elevation, xlab="Elevation (m)", ylab="Species Richness", pch=19)
+abline(lm(total.rich~elevation))
+plot(total.abund~elevation, xlab="Elevation (m)", ylab="Species Abundance", pch=19)
+abline(lm(total.abund~elevation))
+plot(narrow.abundance~elevation, xlab="Elevation (m)", ylab="Narrow-Ranging Species Abundance", pch=19)
+abline(lm(narrow.abundance~elevation))
+plot(wide.abundance~elevation, xlab="Elevation (m)", ylab="Wide-Ranging Species Abundance", pch=19)
+abline(lm(wide.abundance~elevation))
+
+### Plot of number of species per quantile
+### Figure.2
+
+final.data$Quantile=as.factor(final.data$Quantile)
+plot(final.data$Quantile, ylab="Number of Species", xlab="Quintiles",
+main="Number of Species per Quintile")
+
+## Correlation plot between functional richness and elevation
+# Figure 3
+par(mfrow=c(3,1))
+plot(fric.all$All~elevation, xlab="Elevation (m)", ylab="Functional Richness", pch=19)
+abline(lm(fric.all$All~elevation))
+plot(fric.all$Narrow~elevation, xlab="Elevation (m)", ylab="Narrow-Ranging Functional Richness", pch=19)
+abline(lm(fric.all$Narrow~elevation))
+plot(fric.all$Wide~elevation, xlab="Elevation (m)", ylab="Wide-Ranging Functional Richness", pch=19)
+abline(lm(fric.all$Wide~elevation))
+
+# Plot of functional volume of wide ranging vs. narrow ranging species in each plot
+# Figure 4
+fric.all=read.csv("FRic.all.csv", header=T, row.names=1)
+fric.2=fric.all[,2:3]
+fric.3=t(fric.2)
+barplot(as.matrix(fric.3),beside=TRUE, legend=c("Narrow", "Wide"),
+args.legend=list(x="topright"), xlab="Elevation (m)",
+ylab="Functional Volume", las=2)
+
+# Plot of species and abundance percent loss
+## Figure 5A
+
+per=read.csv("per.plot.csv", header=T, row.names=1)
+
+plot(per$per.rich.loss~row.names(per), pch=19, col="black", ylim=c(0,40), type="b", cex=2, xaxt="n", ylab="Percent Loss", xlab="Year")
+par(new=TRUE)
+plot(per$per.abund.loss~row.names(per), pch=19, col="red",ylim=c(0,40),type="b", cex=2, xaxt="n", ylab="Percent Loss", xlab="Year")
+axis(side=1, at=rownames(per), labels=c("2030", "2050", "2070", "2090", 
+"2100"))
+legend("topleft", legend=c("Species Loss", "Abundance Loss"), col=c("black", "red"), lty=1, pch=19)
+
+# Plot of percent of quantiles at each elevation
+
+library("RColorBrewer")
+
+per.q=read.csv("percent.table.csv", header=T, row.names=1)
+barplot(mat.2, beside=TRUE, ylab="Percent Species in each Quantile", xlab="Elevation (m)", las=2, ylim=c(0,50), legend=c("Quantile.1", "Quantile.2","Quantile.3", "Quantile.4", "Quantile.5"), args.legend=list(x="topleft"), col=brewer.pal(n=5, name="RdBu"))
+
+# Plot of functional richness changes at range shift time points
+## Figure 5B
+
+hull.time=read.csv("hull.time.csv", header=T, row.names=1)
+hull.time.2=t(hull.time)
+
+plot(hull.time.2[1,]~colnames(hull.time.2), type="b", xlab="Elevation (m)", ylab="Functional Richness", ylim=c(20,90), xaxt="n", pch=19)
+xticks=seq(250, 1000, by=50)
+axis(side=1, at=xtick, labels=y, las=2)
+par(new=T)
+plot(hull.time.2[2,]~colnames(hull.time.2), type="b", xlab="Elevation (m)", ylab="Functional Richness", ylim=c(20,90), col="red", xaxt="n", pch=19)
+par(new=T)
+plot(hull.time.2[3,]~colnames(hull.time.2), type="b", xlab="Elevation (m)", ylab="Functional Richness", ylim=c(20,90), col="blue", xaxt="n", pch=19)
+par(new=T)
+plot(hull.time.2[4,]~colnames(hull.time.2), type="b", xlab="Elevation (m)", ylab="Functional Richness", ylim=c(20,90), col="yellow", xaxt="n", pch=19)
+par(new=T)
+plot(hull.time.2[5,]~colnames(hull.time.2), type="b", xlab="Elevation (m)", ylab="Functional Richness", ylim=c(20,90), col="gray", xaxt="n", pch=19)
+par(new=T)
+plot(hull.time.2[6,]~colnames(hull.time.2), type="b", xlab="Elevation (m)", ylab="Functional Richness", ylim=c(20,90), col="green", xaxt="n", pch=19)
+
+legend("topleft", legend=c("Present", "Year 2030", "Year 2050", "Year 2070", "Year 2090", "Year 2100"), col=c("black", "red", "blue", "yellow", "gray", "green"), pch=19, cex=0.8)
+
+
