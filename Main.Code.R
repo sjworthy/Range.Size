@@ -1,4 +1,4 @@
-# Differences in patterns of species and functional richness for narrow and wide-ranging species along an elevation gradient
+# Differences in patterns of species and functional richness for narrow and wide-ranging tropical tree species along an elevation gradient
 
 setwd("~/Documents/Range.size/Range.size/Data")
 
@@ -1174,6 +1174,17 @@ row.names(hull.matrix.data)=hull.matrix.data[,1]
 hull.matrix.data.2=hull.matrix.data[,c(3:4)]
 hull.matrix.data.3=t(hull.matrix.data.2)
 
+plot(hull.matrix.data.2$Narrowsp.pca~row.names(hull.matrix.data.2), pch=19, col="black",
+     xlab="Elevation (m)", ylab="Functional Volume", ylim=c(0,45), xaxt="n",cex=2)
+par(new=TRUE)
+plot(hull.matrix.data.2$Widesp.pca~row.names(hull.matrix.data.2), xlab="", ylab="",
+     ylim=c(0,45), pch=19, col="gray", xaxt="n",cex=2)
+axis(side=1, at=rownames(hull.matrix.data.2), labels=c("250", "300", "350", "400",
+                                                       "450","500","550","600","650",
+                                                       "700","750","800","850","900",
+                                                       "950","1000"))
+legend("topright", legend=c("Wide", "Narrow"), col=c("black", "gray"), pch=19)
+  
 barplot(as.matrix(hull.matrix.data.3),beside=TRUE, legend=c("Narrow", "Wide"),
 args.legend=list(x="topright"), xlab="Elevation (m)",
 ylab="Functional Volume", las=2)
@@ -1283,6 +1294,8 @@ legend("bottomright", legend=c("Present", "Year 2030", "Year 2050", "Year 2070",
 devtools::install_version("rangemodelR", "1.0.4")
 library(rangemodelR)
 
+pa.cdm=read.csv("pa.cdm.csv", header=T, row.names=1)
+
 mde.output=matrix(data=NA, ncol = 999, nrow = 16)
 
 for(i in 1:999){
@@ -1320,7 +1333,7 @@ cor.test(test.table$obs.rich, test.table$exp.rich)
 # r = 0.25, p = 0.34
 
 test=lm(test.table$obs.rich~test.table$exp.rich)
-# slope = 0.37, p = 0.344, adjusted R2 = -0.002
+# slope = 0.39, p = 0.317, adjusted R2 = 0.01
 
 # Observed sp. richness distribution is not different from expected sp. richness under MDE
 
