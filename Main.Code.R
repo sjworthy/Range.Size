@@ -1183,7 +1183,7 @@ axis(side=1, at=rownames(hull.matrix.data.2), labels=c("250", "300", "350", "400
                                                        "450","500","550","600","650",
                                                        "700","750","800","850","900",
                                                        "950","1000"))
-legend("topright", legend=c("Wide", "Narrow"), col=c("black", "gray"), pch=19)
+legend("topright", legend=c("Wide", "Narrow"), col=c("gray", "black"), pch=19)
   
 barplot(as.matrix(hull.matrix.data.3),beside=TRUE, legend=c("Narrow", "Wide"),
 args.legend=list(x="topright"), xlab="Elevation (m)",
